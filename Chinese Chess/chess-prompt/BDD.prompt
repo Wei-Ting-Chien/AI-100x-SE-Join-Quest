@@ -1,0 +1,44 @@
+# Task
+請你嚴格遵照「行為驅動開發 (BDD)」的方式，來完成 chess-prompt 資叫夾下 @chess.feature 與 @rules_and_violation.feature 中所有驗收情境的開發。  
+不可同時進行 BDD 開發流程中多個步驟，也不能略過任何一步驟，必須一步一步扎實執行，並確認每一步的結果。
+
+# Context
+
+## Domain 說明
+本應用為「中國象棋」遊戲邏輯模組，支援棋局初始化、移動棋子、合法行棋判斷、吃子邏輯、將軍、被將、勝負判定等行為。開發目標為可測試、可維護、可擴展的邏輯核心。
+
+## Design Guideline
+- 請你根據 OOD 的觀點去進行程式架構的設計，定義出妥當的類別屬性與操作，開發過程可依照需要擴充資料結構或重構職責分工。
+- 棋子、棋盤、遊戲狀態等核心物件需具備封裝性與擴展性。
+
+## Tech Stack
+1. Language Env：**Python**
+2. BDD Test framework：**Behave**
+3. Native test framework：**pytest**
+
+## Application Environment
+1. App 類型：純模組程式碼（非框架）
+2. 所有核心邏輯集中實作於 `chess_game.py` 及相關模組，並置於 `src/` 目錄下
+3. Feature file 放置於 `features/chess.feature`，對應的 step definitions 放置於 `features/steps/`
+
+# BDD 開發流程
+
+1. **先建置出 Behave walking skeleton**
+   - 建立一個最基本的 scenario，例如「棋局初始化成功」
+   - 實作一個最簡單的 step definition
+   - 成功執行 Behave 並看到至少 `1 scenario, 1 step 被執行`
+   - **不得直接跳入邏輯實作或多個情境並行**
+
+2. 嚴格遵守 BDD 以及最小增量原則來開發所有程式碼，針對所有 scenario，一次開發一個 scenario，依序進行：
+
+   A. 一次選擇一個 scenario 實作
+      - 除此 scenario 之外的測試全部都 ignore。
+      - 撰寫此 scenario 對應的 Steps (given, when, then)、開啟相關類別，但是每個類別的行為都不實作。
+      - 並且執行測試，確認測試失敗 (test fail)，並且測試失敗的原因並非框架層級的錯誤，而是期望的「值」上的錯誤。嚴格確認這步驟完成後才能進行下一步的實作。
+
+   B. 為了通過上一步所撰寫的測試程式碼，請實作相關類別所需的程式碼，並確認能讓所有的測試程式碼都通過。
+      - 請嚴格確認有執行到測試程式碼，從 test report 中覆述一次目前 test passed 的數量。
+
+   C. 遵守 clean code 原則，思考是否要重構每個類別的內部程式碼
+      - 如果必要重構的話，在重構完成之後，再執行一次測試，確保所有測試仍然通過，否則需修正邏輯直到測試全數通過。
+
