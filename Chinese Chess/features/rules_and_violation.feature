@@ -7,7 +7,7 @@ Feature: Additional Chinese Chess Rules
   #################################################################
   # 1) GENERAL - Face-to-face Rule (Black Move)
   #################################################################
-  @General @skip
+  @General
   Scenario: Black moves the General and causes face-to-face (Illegal)
     Given the board has:
       | Piece         | Position |
@@ -19,7 +19,7 @@ Feature: Additional Chinese Chess Rules
   #################################################################
   # 2) CHECK & CHECKMATE
   #################################################################
-  @Winning @skip
+  @Winning
   Scenario: Red moves to check and Black cannot respond (Red wins)
     Given the board has:
       | Piece         | Position |
@@ -53,7 +53,7 @@ Feature: Additional Chinese Chess Rules
   #################################################################
   # 5) TURN CONTROL
   #################################################################
-  @Turn @skip
+  @Turn
   Scenario: Red moves twice in a row (Illegal)
     Given it is Red's turn
     And Red just moved a Rook

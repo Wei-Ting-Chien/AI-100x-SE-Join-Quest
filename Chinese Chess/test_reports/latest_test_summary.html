@@ -125,15 +125,15 @@
         <h1>🏰 中國象棋引擎測試報告</h1>
         
         <div class="info">
-            <p><strong>執行時間：</strong>2025-07-04 16:20:10</p>
+            <p><strong>執行時間：</strong>2025-07-04 16:32:10</p>
             <p><strong>遵循原則：</strong>開放封閉原則 (OCP) - 開放擴展，封閉修改</p>
             <p><strong>架構模式：</strong>策略模式 + 責任鍊模式</p>
         </div>
         
         <div class="summary">
-            <div class="card failure">
+            <div class="card success">
                 <h3>BDD 驗收測試</h3>
-                <div class="number">29/32</div>
+                <div class="number">32/32</div>
                 <p>情境通過率</p>
             </div>
             
@@ -305,16 +305,16 @@
                     <td>PASSED</td>
                 </tr>
                 
-                <tr class="failed">
+                <tr class="passed">
                     <td>Additional Chinese Chess Rules</td>
                     <td>Black moves the General and causes face-to-face (Illegal)</td>
-                    <td>FAILED</td>
+                    <td>PASSED</td>
                 </tr>
                 
-                <tr class="failed">
+                <tr class="passed">
                     <td>Additional Chinese Chess Rules</td>
                     <td>Red moves to check and Black cannot respond (Red wins)</td>
-                    <td>FAILED</td>
+                    <td>PASSED</td>
                 </tr>
                 
                 <tr class="passed">
@@ -329,10 +329,10 @@
                     <td>PASSED</td>
                 </tr>
                 
-                <tr class="failed">
+                <tr class="passed">
                     <td>Additional Chinese Chess Rules</td>
                     <td>Red moves twice in a row (Illegal)</td>
-                    <td>FAILED</td>
+                    <td>PASSED</td>
                 </tr>
                 
                 <tr class="passed">
@@ -377,10 +377,10 @@
         
         <h2>✅ 測試總結</h2>
         <div class="info">
-            <p><strong>BDD 驗收測試：</strong>失敗 - 
-               29 / 32 個場景通過</p>
+            <p><strong>BDD 驗收測試：</strong>通過 - 
+               32 / 32 個場景通過</p>
             <p><strong>單元測試：</strong>通過</p>
-            <p><strong>整體結果：</strong>部分測試失敗，需要檢查</p>
+            <p><strong>整體結果：</strong>所有測試通過，架構符合 OCP 原則</p>
         </div>
         
         <div class="info">

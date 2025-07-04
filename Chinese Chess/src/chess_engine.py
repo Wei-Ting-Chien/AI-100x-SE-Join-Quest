@@ -1,5 +1,99 @@
 from abc import ABC, abstractmethod
 
+class TurnManager:
+    """輪次管理器 - 遵循 OCP 原則的擴展組件"""
+    
+    def __init__(self):
+        self.current_turn = 'Red'  # 紅方先手
+        self.last_moved = None
+    
+    def is_valid_turn(self, color):
+        """檢查是否輪到指定顏色行棋"""
+        return self.current_turn == color
+    
+    def switch_turn(self):
+        """切換輪次"""
+        self.current_turn = 'Black' if self.current_turn == 'Red' else 'Red'
+        self.last_moved = 'Black' if self.last_moved == 'Red' else 'Red'
+    
+    def record_move(self, color):
+        """記錄移動並切換輪次"""
+        self.last_moved = color
+        self.switch_turn()
+
+class CheckmateDetector:
+    """將死檢查器 - 遵循 OCP 原則的擴展組件"""
+    
+    def __init__(self, engine):
+        self.engine = engine
+    
+    def is_in_check(self, color):
+        """檢查指定顏色是否被將軍"""
+        # 找到該顏色的將軍位置
+        general_pos = None
+        for pos, piece in self.engine.board.items():
+            if piece['type'] == 'General' and piece['color'] == color:
+                general_pos = pos
+                break
+        
+        if general_pos is None:
+            return False
+        
+        # 檢查是否有對方棋子可以攻擊到將軍
+        opponent_color = 'Black' if color == 'Red' else 'Red'
+        for pos, piece in self.engine.board.items():
+            if piece['color'] == opponent_color:
+                # 檢查這個對方棋子是否可以移動到將軍位置
+                validator = self.engine.validators.get(piece['type'])
+                if validator and validator.is_valid_move(
+                    self.engine.board, pos[0], pos[1], 
+                    general_pos[0], general_pos[1], piece
+                ):
+                    return True
+        
+        return False
+    
+    def has_legal_moves(self, color):
+        """檢查指定顏色是否還有合法移動"""
+        for pos, piece in self.engine.board.items():
+            if piece['color'] == color:
+                # 嘗試該棋子的所有可能移動
+                for target_row in range(1, 11):
+                    for target_col in range(1, 10):
+                        if (target_row, target_col) != pos:
+                            # 模擬移動並檢查是否合法且不會讓自己被將軍
+                            if self._is_move_safe(pos, (target_row, target_col), piece):
+                                return True
+        return False
+    
+    def _is_move_safe(self, from_pos, to_pos, piece):
+        """檢查移動是否安全（移動後不會被將軍）"""
+        # 備份原始狀態
+        original_board = self.engine.board.copy()
+        original_game_result = self.engine.game_result
+        
+        try:
+            # 嘗試移動
+            move_successful = self.engine.move_piece(
+                from_pos[0], from_pos[1], to_pos[0], to_pos[1]
+            )
+            
+            if not move_successful:
+                return False
+            
+            # 檢查移動後是否被將軍
+            is_safe = not self.is_in_check(piece['color'])
+            
+            return is_safe
+        finally:
+            # 恢復原始狀態
+            self.engine.board = original_board
+            self.engine.game_result = original_game_result
+    
+    def detect_checkmate(self, color):
+        """檢查是否為將死"""
+        return self.is_in_check(color) and not self.has_legal_moves(color)
+
 class MoveValidator(ABC):
     """移動驗證器的抽象基類"""
     
@@ -320,6 +414,9 @@ class ChessEngine:
             'Elephant': ElephantMoveValidator(),
             'Soldier': SoldierMoveValidator()
         }
+        # OCP 擴展：組合將死檢查器和輪次管理器
+        self.checkmate_detector = CheckmateDetector(self)
+        self.turn_manager = TurnManager()
         
     def setup_empty_board(self):
         """設置空棋盤"""
@@ -337,6 +434,11 @@ class ChessEngine:
         
         piece = self.board[(from_row, from_col)]
         piece_type = piece['type']
+        piece_color = piece['color']
+        
+        # OCP 擴展：檢查輪次
+        if not self.turn_manager.is_valid_turn(piece_color):
+            return False  # 不是該顏色的回合
         
         # 檢查目標位置是否有自己的棋子（不能吃自己的棋子）
         captured_piece = None
@@ -354,6 +456,8 @@ class ChessEngine:
             if is_valid:
                 # 執行移動
                 self._execute_move(from_row, from_col, to_row, to_col, captured_piece)
+                # OCP 擴展：記錄移動並切換輪次
+                self.turn_manager.record_move(piece_color)
                 return True
             else:
                 return False

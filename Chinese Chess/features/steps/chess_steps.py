@@ -139,4 +139,64 @@ def step_then_red_wins_immediately(context):
 def step_then_game_continues(context):
     # 檢查遊戲是否繼續進行
     assert hasattr(context.chess_engine, 'game_result'), "Expected game result to be set"
-    assert context.chess_engine.game_result == 'Continue', "Expected game to continue" 
+    assert context.chess_engine.game_result == 'Continue', "Expected game to continue"
+
+# =================================================================
+# 新增：黑方移動步驟定義
+# =================================================================
+@when('Black moves the General from {from_pos} to {to_pos}')
+def step_when_black_moves_general(context, from_pos, to_pos):
+    from_row, from_col = eval(from_pos)
+    to_row, to_col = eval(to_pos)
+    context.move_result = context.chess_engine.move_piece(from_row, from_col, to_row, to_col)
+
+# =================================================================
+# 新增：將死判斷步驟定義
+# =================================================================
+@when('Black has no legal move to resolve the check')
+def step_when_black_has_no_legal_move(context):
+    """檢查黑方是否無法擺脫將軍"""
+    # 使用 CheckmateDetector 檢查將死
+    is_checkmate = context.chess_engine.checkmate_detector.detect_checkmate('Black')
+    if is_checkmate:
+        context.chess_engine.game_result = 'Red wins'
+    context.checkmate_verified = is_checkmate
+
+@then('Red wins by checkmate')
+def step_then_red_wins_by_checkmate(context):
+    """驗證紅方通過將死獲勝"""
+    assert hasattr(context.chess_engine, 'game_result'), "Expected game result to be set"
+    assert context.chess_engine.game_result == 'Red wins', "Expected Red to win by checkmate"
+    assert context.checkmate_verified, "Expected checkmate to be verified"
+
+# =================================================================
+# 新增：輪次控制步驟定義
+# =================================================================
+@given("it is Red's turn")
+def step_given_red_turn(context):
+    """設定當前輪到紅方"""
+    context.chess_engine = ChessEngine()
+    context.chess_engine.setup_empty_board()
+    # 設定當前輪次為紅方（預設就是紅方先手）
+    context.chess_engine.turn_manager.current_turn = 'Red'
+
+@given('Red just moved a Rook')
+def step_given_red_just_moved_rook(context):
+    """紅方剛剛移動了車"""
+    # 設置一個簡單的棋盤狀態，表示紅方剛剛移動過
+    context.chess_engine.place_piece('Red', 'Rook', 3, 3)
+    context.chess_engine.place_piece('Red', 'Cannon', 4, 4)
+    # 標記紅方剛移動過，現在應該輪到黑方
+    context.chess_engine.turn_manager.last_moved = 'Red'
+    context.chess_engine.turn_manager.current_turn = 'Black'
+
+@when('Red tries to move a Cannon')
+def step_when_red_tries_move_cannon(context):
+    """紅方試圖移動炮"""
+    # 嘗試移動炮（應該失敗，因為現在是黑方回合）
+    context.move_result = context.chess_engine.move_piece(4, 4, 4, 5)
+
+@then("the move is illegal because it's Black's turn")
+def step_then_illegal_because_black_turn(context):
+    """驗證移動非法，因為輪到黑方"""
+    assert context.move_result == False, "Expected move to be illegal due to turn violation" 
