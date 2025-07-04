@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
 from order_service import (
     OrderService, Product, OrderItem, Category,
-    ThresholdDiscountPromotion, BuyOneGetOnePromotion
+    ThresholdDiscountPromotion, BuyOneGetOnePromotion, Double11Promotion
 )
 
 
@@ -43,6 +43,32 @@ def step_buy_one_get_one_cosmetics(context):
     context.order_service.add_promotion(promotion)
 
 
+@given('the Double 11 promotion is active')
+def step_double11_promotion_active(context):
+    """設定雙 11 促銷活動"""
+    context.order_service = OrderService()
+    promotion = Double11Promotion()
+    context.order_service.add_promotion(promotion)
+
+
+@given('a customer orders the following items')
+def step_customer_orders_items(context):
+    """客戶訂購商品（保存到 context 中）"""
+    context.order_items = []
+    
+    for row in context.table:
+        product_name = row['product']
+        quantity = int(row['quantity'])
+        unit_price = int(row['unitPrice'])
+        
+        # 預設為 apparel 分類
+        category = Category.APPAREL
+        
+        product = Product(product_name, category, unit_price)
+        order_item = OrderItem(product, quantity)
+        context.order_items.append(order_item)
+
+
 @when('a customer places an order with')
 def step_customer_places_order(context):
     """客戶下訂單"""
@@ -71,6 +97,13 @@ def step_customer_places_order(context):
     
     # 建立訂單
     context.order_summary, context.delivery_items = context.order_service.create_order(order_items)
+
+
+@when('the order is submitted')
+def step_order_submitted(context):
+    """提交訂單"""
+    # 建立訂單
+    context.order_summary, context.delivery_items = context.order_service.create_order(context.order_items)
 
 
 @then('the order summary should be')
@@ -108,4 +141,12 @@ def step_verify_delivery_items(context):
         actual_items[item.product_name] = item.quantity
     
     assert expected_items == actual_items, \
-        f"Expected delivery items {expected_items}, but got {actual_items}" 
+        f"Expected delivery items {expected_items}, but got {actual_items}"
+
+
+@then('the total price should be {expected_total:d}')
+def step_total_price_should_be(context, expected_total):
+    """驗證總價格"""
+    actual_total = context.order_summary.total_amount
+    assert actual_total == expected_total, \
+        f"Expected total price {expected_total}, but got {actual_total}" 

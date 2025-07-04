@@ -115,6 +115,35 @@ class BuyOneGetOnePromotion(Promotion):
         return 0, delivery_items  # 買一送一不提供折扣，只增加數量
 
 
+class Double11Promotion(Promotion):
+    """雙 11 促銷：每滿 10 個相同商品，只收 8 個商品的錢"""
+    
+    def apply(self, order_items: List[OrderItem]) -> tuple[int, List[DeliveryItem]]:
+        """應用雙 11 促銷"""
+        total_discount = 0
+        delivery_items = []
+        
+        for item in order_items:
+            # 計算該商品的促銷
+            quantity = item.quantity
+            unit_price = item.product.unit_price
+            
+            # 每滿 10 個，只收 8 個的錢
+            sets_of_10 = quantity // 10
+            remaining = quantity % 10
+            
+            # 計算折扣：每 10 個商品省 2 個商品的錢
+            discount_per_item = sets_of_10 * 2 * unit_price
+            total_discount += discount_per_item
+            
+            # 交付數量不變
+            delivery_items.append(
+                DeliveryItem(item.product.name, item.quantity)
+            )
+        
+        return total_discount, delivery_items
+
+
 class OrderService:
     """訂單服務"""
     

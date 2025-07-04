@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from order_service import (
     OrderService, Product, OrderItem, Category,
-    ThresholdDiscountPromotion, BuyOneGetOnePromotion
+    ThresholdDiscountPromotion, BuyOneGetOnePromotion, Double11Promotion
 )
 
 
@@ -51,6 +51,7 @@ class Context:
         self.order_service = None
         self.order_summary = None
         self.delivery_items = None
+        self.order_items = None
 
 
 class SimpleBDDRunner:
@@ -355,6 +356,111 @@ class SimpleBDDRunner:
             print(f"❌ Scenario 6 失敗: {e}")
             raise
     
+    def run_double11_scenario_1(self):
+        """
+        Scenario: Buy 12 identical items (Double 11)
+        """
+        print("運行 Double 11 Scenario 1: Buy 12 identical items")
+        
+        try:
+            # Given the Double 11 promotion is active
+            self.given_double11_promotion_active()
+            
+            # And a customer orders the following items
+            order_table = """
+            | product | quantity | unitPrice |
+            | Socks   | 12       | 100       |
+            """
+            self.context.table = self.parse_table(order_table)
+            self.given_customer_orders_items()
+            
+            # When the order is submitted
+            self.when_order_submitted()
+            
+            # Then the total price should be 1000
+            self.then_total_price_should_be(1000)
+            
+            self.passed_scenarios += 1
+            print("✅ Double 11 Scenario 1 通過!")
+            
+        except Exception as e:
+            self.failed_scenarios += 1
+            print(f"❌ Double 11 Scenario 1 失敗: {e}")
+            raise
+    
+    def run_double11_scenario_2(self):
+        """
+        Scenario: Buy 27 identical items (Double 11)
+        """
+        print("運行 Double 11 Scenario 2: Buy 27 identical items")
+        
+        try:
+            # Given the Double 11 promotion is active
+            self.given_double11_promotion_active()
+            
+            # And a customer orders the following items
+            order_table = """
+            | product | quantity | unitPrice |
+            | Socks   | 27       | 100       |
+            """
+            self.context.table = self.parse_table(order_table)
+            self.given_customer_orders_items()
+            
+            # When the order is submitted
+            self.when_order_submitted()
+            
+            # Then the total price should be 2300
+            self.then_total_price_should_be(2300)
+            
+            self.passed_scenarios += 1
+            print("✅ Double 11 Scenario 2 通過!")
+            
+        except Exception as e:
+            self.failed_scenarios += 1
+            print(f"❌ Double 11 Scenario 2 失敗: {e}")
+            raise
+    
+    def run_double11_scenario_3(self):
+        """
+        Scenario: Buy 10 different items (Double 11)
+        """
+        print("運行 Double 11 Scenario 3: Buy 10 different items")
+        
+        try:
+            # Given the Double 11 promotion is active
+            self.given_double11_promotion_active()
+            
+            # And a customer orders the following items
+            order_table = """
+            | product | quantity | unitPrice |
+            | A       | 1        | 100       |
+            | B       | 1        | 100       |
+            | C       | 1        | 100       |
+            | D       | 1        | 100       |
+            | E       | 1        | 100       |
+            | F       | 1        | 100       |
+            | G       | 1        | 100       |
+            | H       | 1        | 100       |
+            | I       | 1        | 100       |
+            | J       | 1        | 100       |
+            """
+            self.context.table = self.parse_table(order_table)
+            self.given_customer_orders_items()
+            
+            # When the order is submitted
+            self.when_order_submitted()
+            
+            # Then the total price should be 1000
+            self.then_total_price_should_be(1000)
+            
+            self.passed_scenarios += 1
+            print("✅ Double 11 Scenario 3 通過!")
+            
+        except Exception as e:
+            self.failed_scenarios += 1
+            print(f"❌ Double 11 Scenario 3 失敗: {e}")
+            raise
+    
     def given_no_promotions(self):
         """Given: no promotions are applied"""
         self.context.order_service = OrderService()
@@ -379,6 +485,31 @@ class SimpleBDDRunner:
         
         promotion = BuyOneGetOnePromotion(Category.COSMETICS)
         self.context.order_service.add_promotion(promotion)
+        self.total_steps += 1
+    
+    def given_double11_promotion_active(self):
+        """Given: the Double 11 promotion is active"""
+        self.context.order_service = OrderService()
+        promotion = Double11Promotion()
+        self.context.order_service.add_promotion(promotion)
+        self.total_steps += 1
+    
+    def given_customer_orders_items(self):
+        """Given: a customer orders the following items"""
+        self.context.order_items = []
+        
+        for row in self.context.table:
+            product_name = row['product']
+            quantity = int(row['quantity'])
+            unit_price = int(row['unitPrice'])
+            
+            # 預設為 apparel 分類
+            category = Category.APPAREL
+            
+            product = Product(product_name, category, unit_price)
+            order_item = OrderItem(product, quantity)
+            self.context.order_items.append(order_item)
+        
         self.total_steps += 1
     
     def when_customer_places_order(self):
@@ -451,6 +582,19 @@ class SimpleBDDRunner:
         
         self.total_steps += 1
     
+    def when_order_submitted(self):
+        """When: the order is submitted"""
+        # 建立訂單
+        self.context.order_summary, self.context.delivery_items = self.context.order_service.create_order(self.context.order_items)
+        self.total_steps += 1
+    
+    def then_total_price_should_be(self, expected_total):
+        """Then: the total price should be"""
+        actual_total = self.context.order_summary.total_amount
+        assert actual_total == expected_total, \
+            f"Expected total price {expected_total}, but got {actual_total}"
+        self.total_steps += 1
+    
     def run_all_scenarios(self, only_scenario=None):
         """運行所有 scenarios"""
         print("=== 簡化 BDD 測試運行器 ===")
@@ -461,7 +605,10 @@ class SimpleBDDRunner:
             3: self.run_scenario_3,
             4: self.run_scenario_4,
             5: self.run_scenario_5,
-            6: self.run_scenario_6
+            6: self.run_scenario_6,
+            "d11_1": self.run_double11_scenario_1,
+            "d11_2": self.run_double11_scenario_2,
+            "d11_3": self.run_double11_scenario_3
         }
         
         if only_scenario:
@@ -495,9 +642,14 @@ class SimpleBDDRunner:
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description='簡化 BDD 測試運行器')
-    parser.add_argument('--scenario', type=int, help='僅運行指定的 scenario')
+    parser.add_argument('--scenario', help='僅運行指定的 scenario')
     args = parser.parse_args()
     
+    # 嘗試將 scenario 轉換為整數，如果失敗就保持字串
+    scenario_key = args.scenario
+    if scenario_key and scenario_key.isdigit():
+        scenario_key = int(scenario_key)
+    
     runner = SimpleBDDRunner()
-    success = runner.run_all_scenarios(only_scenario=args.scenario)
+    success = runner.run_all_scenarios(only_scenario=scenario_key)
     sys.exit(0 if success else 1) 
