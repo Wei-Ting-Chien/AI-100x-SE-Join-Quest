@@ -1,0 +1,31 @@
+# Task
+請你嚴格遵照「行為驅動開發 (BDD)」的方式，來完成 @order.feature 中所有驗收情境的開發。  
+不可同時進行 BDD 開發流程中多個步驟，也不能略過任何一步驟，必須一步一步扎實執行，並確認每一步的結果。
+
+# Context
+
+## Design Guideline
+- 參考 entities ERD: @ERD.png 以及 OOD 設計圖：@OOD.png。兩張圖中所指示的類別屬性及操作只是基準，你可視情況增加新的類別、屬性或行為。
+
+## Tech Stack
+1. Language Env：**Python**
+2. BDD Test framework：**Behave**
+3. Native test framework：**pytest**
+
+## Application Environment
+1. App 類型：純模組程式碼（非框架）
+2. 所有優惠邏輯應集中實作於 `order_service.py` 中，並置於 `src/` 目錄下
+3. Feature file 位於 `features/order.feature`，steps 檔案置於 `features/steps/`
+
+# BDD 開發流程
+
+1. 先建置出 Behave walking skeleton — 可以成功執行 Behave 並且至少有一個 scenario 測試被執行（確認 CLI report 中顯示 1 scenario、1 step 被執行）
+
+2. 嚴格遵守 BDD 與最小增量原則來開發所有程式碼。針對所有 scenario，一次開發一個 scenario，依序進行：
+
+    A. **一次選擇一個 scenario 實作**。除了該 scenario 外，其餘 scenario 可暫時加上 `@skip` 或 `@ignore` tag，避免誤觸執行。為該 scenario 撰寫對應的 Steps（given, when, then），**但僅撰寫函式名稱與參數，不實作邏輯**，必要時可開啟類別與資料結構定義。執行 Behave 測試，**確認測試失敗原因為邏輯錯誤（例如 assert 值錯誤），而非語法錯誤、Missing Step 定義或 ImportError 等框架錯誤。**
+
+    B. 為了通過上一步的測試，**實作必要邏輯於 `order_service.py` 及相關類別**，並確保該 scenario 測試通過。請確認 test report 中顯示該 scenario 為 `passed`，並指出目前通過的測試數量（例如：`1 scenario passed, 0 failed`）
+
+    C. 重構：遵守 clean code 原則，考慮是否需對目前程式碼進行命名、結構、抽象的改善。若有重構，需再次執行所有測試，確認 scenario 數與執行結果皆正確，**不得產生任何 regression**。
+
